@@ -17,6 +17,23 @@ This project demonstrates a real-time stock market data processing pipeline usin
 - **AWS S3**: Data storage
 - **AWS CloudWatch**: Monitoring and logging
 
+## Usage
+
+- Deploy the AWS Lambda functions using the provided deployment scripts.
+- Set up AWS Kinesis streams for data ingestion.
+- Monitor the processing through AWS CloudWatch dashboards.
+
+## Challenges Faced
+
+- Ensuring real-time processing with minimal latency.
+- Managing AWS resources and permissions effectively.
+
+## Future Enhancements
+
+- Implementing machine learning models for predictive analytics.
+- Enhancing data visualization dashboards.
+  
+
 ## Setup and Installation
 
 Clone the repository:
