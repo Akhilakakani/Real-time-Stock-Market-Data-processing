@@ -1,0 +1,48 @@
+pip install boto3
+
+import json
+import datetime
+import yfinance as yf
+import boto3
+import time
+import random
+
+session = boto3.Session(
+    aws_access_key_id = '****',
+    aws_secret_access_key = '***',
+    region_name = '***'
+)
+
+client = session.client('kinesis')
+
+def getStockData(stock_symbol):
+  stock = yf.Ticker(stock_symbol)
+  data={}
+  hist=stock.history(period="1d", interval="1m")  
+  if not hist.empty:
+    latest_data = hist.iloc[-1]
+    data["stock_symbol"] = stock_symbol
+    data["timestamp"] = str(latest_data.name)
+    data["open"] = latest_data["Open"]
+    data["high"] = latest_data["High"]
+    data["low"] = latest_data["Low"]
+    data["close"] = latest_data["Close"]
+    data["volume"] = int(latest_data["Volume"])
+  return data
+
+temp = 0
+stock_symbol = 'AAPL'
+while temp < 100:
+  rnd = random.random()
+  if rnd < 0.01:
+    data = json.dumps(getStockData("TSLA"))
+    client.put_record (StreamName="demo_stock_market", Data=data, PartitionKey="1") 
+    print ('*** anomaly ***' + data)
+  else:
+    data = json.dumps(getStockData(stock_symbol))
+    if data:
+      client.put_record(StreamName="demo_stock_market", Data=data, PartitionKey="1")
+      print(data)
+
+temp += 1
+time.sleep(60)

@@ -1,0 +1,30 @@
+import json
+import boto3
+import datetime
+import base64
+
+s3_client = boto3.client('s3')
+
+BUCKET_NAME = 'demo-stock-market'
+
+def process_stock_data(stock_data):
+    open_price = stock_data['open']
+    close_price = stock_data['close']
+    anomaly = abs(close_price - open_price)/open_price>0.05 
+    stock_data['anomaly_detected'] = anomaly
+    return stock_data
+
+def lambda_handler(event, context):
+    for record in event['Records']:
+        payload = record['kinesis']['data'] 
+        decoded_data = json.loads(base64.b64decode(payload).decode('utf-8'))
+        processed_data = process_stock_data(decoded_data)
+        print(f"Processed data: {processed_data}")
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")   
+        s3_key = f"processed_stock_data/{processed_data['stock_symbol']}/{timestamp}.json"
+        s3_client.put_object(Bucket=BUCKET_NAME, Key=s3_key, Body=json.dumps(processed_data), ContentType='application/json')
+        print(f"Data saved to S3 with key  : {s3_key}")     
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Lambda function executed successfully!')
+    }
